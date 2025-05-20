@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const useIsPWA = () => {
-  const [isPWA, setIsPWA] = useState(false);
+  const [isPWA, setIsPWA] = useState(true);
 
   useEffect(() => {
     const checkPWA =
