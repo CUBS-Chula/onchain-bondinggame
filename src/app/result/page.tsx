@@ -1,4 +1,5 @@
 import { cn } from "@/components/cn";
+import NavBar from "@/components/NavBar";
 
 export default function ResultPage() {
   return (
@@ -36,6 +37,7 @@ export default function ResultPage() {
         <button className={cn("w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold mb-3")}>Play Again</button>
         <button className={cn("w-full bg-gray-100 text-gray-800 py-2 rounded-lg font-semibold")}>Back to Menu</button>
       </div>
+      <NavBar />
     </div>
   );
 }

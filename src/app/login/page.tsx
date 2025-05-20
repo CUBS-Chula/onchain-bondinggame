@@ -1,4 +1,5 @@
 import { cn } from "@/components/cn";
+import NavBar from "@/components/NavBar";
 
 export default function GamePlayPage() {
   return (
@@ -28,6 +29,7 @@ export default function GamePlayPage() {
           <button className={cn("w-16 h-16 rounded-lg bg-gray-100 flex flex-col items-center justify-center text-2xl border border-gray-300 hover:bg-gray-200")}>✌️<div className="text-xs mt-1">Scissors</div></button>
         </div>
       </div>
+      <NavBar />
     </div>
   );
 }

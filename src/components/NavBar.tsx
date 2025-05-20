@@ -1,16 +1,39 @@
 "use client";
 
+import Link from "next/link";
 import { QrCode, Search, Trophy, User } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/components/cn";
+
+const navItems = [
+  { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },
+  { href: "/login", icon: QrCode, label: "Play" },
+  { href: "/", icon: Search, label: "Home" },
+  { href: "/profile", icon: User, label: "Profile" },
+];
 
 export default function NavBar() {
+  const pathname = usePathname();
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-gray-200 pt-6 pb-18 px-4">
+    <nav className={cn(
+      "fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-gray-200 pt-4 pb-6 px-4 z-50"
+    )}>
       <div className="flex justify-around items-center">
-        <Trophy className="w-7 h-7 text-black" />
-        <QrCode className="w-7 h-7 text-black" />
-        <Search className="w-7 h-7 text-black" />
-        <User className="w-7 h-7 text-black" />
+        {navItems.map(({ href, icon: Icon, label }) => (
+          <Link key={href} href={href} className="flex flex-col items-center group">
+            <Icon
+              className={cn(
+                "w-7 h-7 transition-colors",
+                pathname === href ? "text-indigo-600" : "text-black group-hover:text-indigo-400"
+              )}
+            />
+            <span className={cn(
+              "text-xs mt-1 transition-colors",
+              pathname === href ? "text-indigo-600 font-semibold" : "text-gray-500 group-hover:text-indigo-400"
+            )}>{label}</span>
+          </Link>
+        ))}
       </div>
-    </div>
+    </nav>
   );
 }

@@ -1,4 +1,5 @@
 import { cn } from "@/components/cn";
+import NavBar from "@/components/NavBar";
 
 export default function LeaderboardPage() {
   return (
@@ -51,6 +52,7 @@ export default function LeaderboardPage() {
           </div>
         </div>
       </div>
+      <NavBar />
     </div>
   );
 }
