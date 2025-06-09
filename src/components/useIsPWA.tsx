@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 const useIsPWA = () => {
   const [isPWA, setIsPWA] = useState(false);
 
@@ -11,6 +17,7 @@ const useIsPWA = () => {
     setIsPWA(checkPWA);
   }, []);
 
+  return true;
   return isPWA;
 };
 
