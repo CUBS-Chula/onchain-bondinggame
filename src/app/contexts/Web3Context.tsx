@@ -74,6 +74,30 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
   const [isConnecting, setIsConnecting] = useState(false)
   const [selectedWallet, setSelectedWallet] = useState<'metamask' | 'coinbase' | 'walletconnect' | null>(null)
 
+  // Setup event listeners when provider is available
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.ethereum) return
+
+    // Listen for account changes
+    const handleAccountsChanged: AccountsChangedHandler = (accounts: string[]) => {
+      setAccount(accounts[0] || null)
+    }
+    
+    // Listen for chain changes
+    const handleChainChanged: ChainChangedHandler = () => {
+      window.location.reload()
+    }
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged)
+    window.ethereum.on('chainChanged', handleChainChanged)
+
+    // Cleanup function to remove listeners
+    return () => {
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged)
+      window.ethereum?.removeListener('chainChanged', handleChainChanged)
+    }
+  }, [])
+
   const connect = async (walletType: 'metamask' | 'coinbase' | 'walletconnect') => {
     if (typeof window === 'undefined' || !window.ethereum) {
       alert('Please install a Web3 wallet to use this application')
@@ -111,27 +135,6 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setAccount(accounts[0])
       setProvider(provider)
       setSelectedWallet(walletType)
-
-      useEffect(() => {
-        // Listen for account changes
-        const handleAccountsChanged: AccountsChangedHandler = (accounts: string[]) => {
-          setAccount(accounts[0] || null)
-        }
-        
-        // Listen for chain changes
-        const handleChainChanged: ChainChangedHandler = () => {
-          window.location.reload()
-        }
-
-        window.ethereum.on('accountsChanged', handleAccountsChanged)
-        window.ethereum.on('chainChanged', handleChainChanged)
-
-        // Cleanup function to remove listeners
-        return () => {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
-          window.ethereum.removeListener('chainChanged', handleChainChanged)
-        }
-      }, [])
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       alert(error instanceof Error ? error.message : 'Failed to connect wallet')
