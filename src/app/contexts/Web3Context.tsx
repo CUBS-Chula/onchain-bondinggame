@@ -4,6 +4,27 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { ethers } from 'ethers'
 
+// Define types for Ethereum provider events
+type AccountsChangedHandler = (accounts: string[]) => void
+type ChainChangedHandler = (chainId: string) => void
+type ConnectHandler = (connectInfo: { chainId: string }) => void
+type DisconnectHandler = (error: { code: number; message: string }) => void
+
+type EthereumEventHandler = 
+  | AccountsChangedHandler 
+  | ChainChangedHandler 
+  | ConnectHandler 
+  | DisconnectHandler
+
+// Define Ethereum RPC method types
+interface EthereumRequestMap {
+  'eth_requestAccounts': string[]
+  'eth_accounts': string[]
+  'eth_chainId': string
+  'wallet_switchEthereumChain': null
+  'wallet_addEthereumChain': null
+}
+
 // Extend the window.ethereum type
 declare global {
   interface Window {
@@ -11,9 +32,12 @@ declare global {
       isMetaMask?: boolean
       isCoinbaseWallet?: boolean
       isWalletConnect?: boolean
-      request: (args: { method: string; params?: any[] }) => Promise<any>
-      on: (eventName: string, handler: (...args: any[]) => void) => void
-      removeListener: (eventName: string, handler: (...args: any[]) => void) => void
+      request: <T extends keyof EthereumRequestMap>(args: {
+        method: T
+        params?: unknown[]
+      }) => Promise<EthereumRequestMap[T]>
+      on: (eventName: string, handler: EthereumEventHandler) => void
+      removeListener: (eventName: string, handler: EthereumEventHandler) => void
     }
   }
 }
@@ -89,14 +113,17 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setSelectedWallet(walletType)
 
       // Listen for account changes
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      const handleAccountsChanged: AccountsChangedHandler = (accounts: string[]) => {
         setAccount(accounts[0] || null)
-      })
-
+      }
+      
       // Listen for chain changes
-      window.ethereum.on('chainChanged', () => {
+      const handleChainChanged: ChainChangedHandler = () => {
         window.location.reload()
-      })
+      }
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged)
+      window.ethereum.on('chainChanged', handleChainChanged)
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       alert(error instanceof Error ? error.message : 'Failed to connect wallet')

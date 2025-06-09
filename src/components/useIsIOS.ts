@@ -60,12 +60,12 @@ export default function useIsIOS(): boolean {
       }
       
       // Check for iOS Safari
-      if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      if (/iPad|iPhone|iPod/.test(userAgent) && !('MSStream' in window)) {
         if (DEBUG_IOS_DETECTION) {
           console.log('📱 iOS Detection: iOS Safari detected via regex', { 
             userAgent,
             regexMatch: /iPad|iPhone|iPod/.test(userAgent),
-            isNotMSStream: !(window as any).MSStream
+            isNotMSStream: !('MSStream' in window)
           });
         }
         return true;

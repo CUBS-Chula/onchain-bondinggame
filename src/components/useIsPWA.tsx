@@ -17,8 +17,8 @@ const useIsPWA = () => {
     setIsPWA(checkPWA);
   }, []);
 
-  // return isPWA;
   return true;
+  return isPWA;
 };
 
 export default useIsPWA;
