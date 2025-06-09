@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { cn } from "@/components/cn";
-import NavBar from "@/components/NavBar";
 import { useWeb3 } from '@/app/contexts/Web3Context';
 // import QRCode from 'qrcode.react';
 
@@ -242,7 +241,6 @@ export default function GamePage() {
           </div>
         )}
       </div>
-      <NavBar />
     </div>
   );
 }

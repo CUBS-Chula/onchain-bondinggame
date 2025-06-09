@@ -1,5 +1,4 @@
 import { cn } from "@/components/cn";
-import NavBar from "@/components/NavBar";
 
 export default function RegisterPage() {
   return (
@@ -28,7 +27,6 @@ export default function RegisterPage() {
         {/* Save Button */}
         <button className={cn("w-full bg-black text-white py-2 rounded-lg font-semibold")}>Save</button>
       </div>
-      <NavBar />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 "use client";
-import NavBar from "@/components/NavBar";
 import { TokenIcon } from "@web3icons/react";
 import { useWeb3 } from "@/app/contexts/Web3Context";
 import Image from "next/image";
@@ -147,8 +146,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
-
-      <NavBar />
     </div>
   );
 }
