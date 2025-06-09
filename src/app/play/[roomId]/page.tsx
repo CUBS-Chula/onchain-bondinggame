@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { cn } from "@/components/cn";
 import NavBar from "@/components/NavBar";
 import { useWeb3 } from '@/app/contexts/Web3Context';
@@ -21,20 +21,19 @@ export default function GamePage() {
   const [gameState, setGameState] = useState<GameState>('waiting');
   const [countdown, setCountdown] = useState(10);
   const [playerChoice, setPlayerChoice] = useState<Choice>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [opponentChoice, setOpponentChoice] = useState<Choice>(null);
   const [result, setResult] = useState<string>('');
-  const [roomId, setRoomId] = useState<string>('');
-  const [playerRole, setPlayerRole] = useState<PlayerRole>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [roomId, setRoomId] = useState<string>(''); // Used for URL parameter display
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [playerRole, setPlayerRole] = useState<PlayerRole>(null); // Will be used for future features
   const [room, setRoom] = useState<Room | null>(null);
   const playerChoiceRef = useRef<Choice>(null);
-  const { account, connect, isConnecting } = useWeb3();
+  const { account } = useWeb3();
 
-  useEffect(() => {
-    console.log('Component mounted, starting game');
-    startGame();
-  }, []);
-
-  // Mock API calls
+  // Mock API calls - these will be used for future room functionality
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const createRoom = async () => {
     // Simulate API call
     const newRoom: Room = {
@@ -50,7 +49,8 @@ export default function GamePage() {
     return newRoom;
   };
 
-  const joinRoom = async (roomId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const joinRoom = async (roomIdParam: string) => {
     // Simulate API call
     if (room && room.playCount >= 1) {
       console.log('Already played with this player');
@@ -62,7 +62,34 @@ export default function GamePage() {
     startGame();
   };
 
-  const startGame = () => {
+  const determineWinner = useCallback((player: Choice, opponent: Choice) => {
+    console.log('Determining winner:', { player, opponent });
+    
+    if (!player || !opponent) {
+      console.log('Missing choices:', { player, opponent });
+      return;
+    }
+
+    if (player === opponent) {
+      setResult('เสมอ!');
+    } else if (
+      (player === 'rock' && opponent === 'scissors') ||
+      (player === 'paper' && opponent === 'rock') ||
+      (player === 'scissors' && opponent === 'paper')
+    ) {
+      setResult('คุณชนะ!');
+    } else {
+      setResult('คุณแพ้!');
+    }
+    console.log('Setting game state to result');
+    setGameState('result');
+    // Update play count
+    if (room) {
+      setRoom({ ...room, playCount: room.playCount + 1 });
+    }
+  }, [room]);
+
+  const startGame = useCallback(() => {
     console.log('Starting new game');
     setGameState('countdown');
     setPlayerChoice(null);
@@ -97,40 +124,18 @@ export default function GamePage() {
         determineWinner(playerChoiceRef.current, opponentChoice);
       }
     }, 1000);
-  };
+  }, [determineWinner]);
+
+  useEffect(() => {
+    console.log('Component mounted, starting game');
+    startGame();
+  }, [startGame]);
 
   const makeChoice = (choice: Choice) => {
     if (gameState === 'countdown') {
       console.log('Player making choice:', choice);
       playerChoiceRef.current = choice;
       setPlayerChoice(choice);
-    }
-  };
-
-  const determineWinner = (player: Choice, opponent: Choice) => {
-    console.log('Determining winner:', { player, opponent });
-    
-    if (!player || !opponent) {
-      console.log('Missing choices:', { player, opponent });
-      return;
-    }
-
-    if (player === opponent) {
-      setResult('เสมอ!');
-    } else if (
-      (player === 'rock' && opponent === 'scissors') ||
-      (player === 'paper' && opponent === 'rock') ||
-      (player === 'scissors' && opponent === 'paper')
-    ) {
-      setResult('คุณชนะ!');
-    } else {
-      setResult('คุณแพ้!');
-    }
-    console.log('Setting game state to result');
-    setGameState('result');
-    // Update play count
-    if (room) {
-      setRoom({ ...room, playCount: room.playCount + 1 });
     }
   };
 
