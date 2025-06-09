@@ -112,18 +112,26 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setProvider(provider)
       setSelectedWallet(walletType)
 
-      // Listen for account changes
-      const handleAccountsChanged: AccountsChangedHandler = (accounts: string[]) => {
-        setAccount(accounts[0] || null)
-      }
-      
-      // Listen for chain changes
-      const handleChainChanged: ChainChangedHandler = () => {
-        window.location.reload()
-      }
+      useEffect(() => {
+        // Listen for account changes
+        const handleAccountsChanged: AccountsChangedHandler = (accounts: string[]) => {
+          setAccount(accounts[0] || null)
+        }
+        
+        // Listen for chain changes
+        const handleChainChanged: ChainChangedHandler = () => {
+          window.location.reload()
+        }
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged)
-      window.ethereum.on('chainChanged', handleChainChanged)
+        window.ethereum.on('accountsChanged', handleAccountsChanged)
+        window.ethereum.on('chainChanged', handleChainChanged)
+
+        // Cleanup function to remove listeners
+        return () => {
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+          window.ethereum.removeListener('chainChanged', handleChainChanged)
+        }
+      }, [])
     } catch (error) {
       console.error('Failed to connect wallet:', error)
       alert(error instanceof Error ? error.message : 'Failed to connect wallet')

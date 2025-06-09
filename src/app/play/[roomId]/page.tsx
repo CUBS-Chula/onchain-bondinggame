@@ -95,35 +95,46 @@ export default function GamePage() {
     setOpponentChoice(null);
     setResult('');
     playerChoiceRef.current = null;
-    let timeLeft = 10;
-    const timer = setInterval(() => {
-      timeLeft--;
-      setCountdown(timeLeft);
-      console.log(`Countdown: ${timeLeft}, Player choice: ${playerChoiceRef.current}`);
-      
-      if (timeLeft === 0) {
-        clearInterval(timer);
-        console.log('Countdown ended');
-        console.log('Final player choice:', playerChoiceRef.current);
-        
-        // If player hasn't chosen, force a random choice
-        if (!playerChoiceRef.current) {
-          console.log('No player choice, selecting random');
-          const choices: Choice[] = ['rock', 'paper', 'scissors'];
-          const randomChoice = choices[Math.floor(Math.random() * choices.length)];
-          console.log('Random choice selected:', randomChoice);
-          playerChoiceRef.current = randomChoice;
-          setPlayerChoice(randomChoice);
-        }
-
-        // Show result immediately
-        const opponentChoice: Choice = 'scissors';
-        console.log('Setting opponent choice:', opponentChoice);
-        setOpponentChoice(opponentChoice);
-        determineWinner(playerChoiceRef.current, opponentChoice);
-      }
-    }, 1000);
+    setCountdown(10);
   }, [determineWinner]);
+
+  useEffect(() => {
+    if (gameState === 'countdown') {
+      let timeLeft = 10;
+      const timer = setInterval(() => {
+        timeLeft--;
+        setCountdown(timeLeft);
+        console.log(`Countdown: ${timeLeft}, Player choice: ${playerChoiceRef.current}`);
+        
+        if (timeLeft === 0) {
+          clearInterval(timer);
+          console.log('Countdown ended');
+          console.log('Final player choice:', playerChoiceRef.current);
+          
+          // If player hasn't chosen, force a random choice
+          if (!playerChoiceRef.current) {
+            console.log('No player choice, selecting random');
+            const choices: Choice[] = ['rock', 'paper', 'scissors'];
+            const randomChoice = choices[Math.floor(Math.random() * choices.length)];
+            console.log('Random choice selected:', randomChoice);
+            playerChoiceRef.current = randomChoice;
+            setPlayerChoice(randomChoice);
+          }
+
+          // Show result immediately
+          const opponentChoice: Choice = 'scissors';
+          console.log('Setting opponent choice:', opponentChoice);
+          setOpponentChoice(opponentChoice);
+          determineWinner(playerChoiceRef.current, opponentChoice);
+        }
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+        console.log('Timer cleared on unmount');
+      };
+    }
+  }, [gameState, determineWinner]);
 
   useEffect(() => {
     console.log('Component mounted, starting game');
