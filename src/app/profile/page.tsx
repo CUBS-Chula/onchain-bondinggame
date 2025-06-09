@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export default function ProfilePage() {
 
-  const { account, connect, isConnecting } = useWeb3();
+  const { account } = useWeb3();
 
   return (
     <div>

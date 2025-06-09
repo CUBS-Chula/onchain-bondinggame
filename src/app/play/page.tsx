@@ -8,7 +8,7 @@ import { createHash } from 'crypto';
 export default function PlayPage() {
   const { account, connect, isConnecting } = useWeb3();
   const router = useRouter();
-  const [roomId, setRoomId] = useState('');
+  // const [roomId, setRoomId] = useState('');
   const [createdRoomId, setCreatedRoomId] = useState('');
   const [joinRoomId, setJoinRoomId] = useState('');
   const [isJoining, setIsJoining] = useState(false);
