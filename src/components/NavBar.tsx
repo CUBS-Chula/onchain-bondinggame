@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { QrCode, Search, Trophy, User } from "lucide-react";
+import { Home, QrCode, Trophy, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/components/cn";
 
 const navItems = [
+  { href: "/", icon: Home, label: "Home" },
+  { href: "/play", icon: QrCode, label: "Play" },
   { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { href: "/login", icon: QrCode, label: "Play" },
-  { href: "/", icon: Search, label: "Home" },
   { href: "/profile", icon: User, label: "Profile" },
 ];
 

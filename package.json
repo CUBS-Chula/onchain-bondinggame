@@ -9,13 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/qrcode": "^1.5.5",
+    "@walletconnect/qrcode-modal": "^1.8.0",
+    "@walletconnect/sign-client": "^2.21.1",
     "@web3icons/react": "^4.0.13",
     "clsx": "^2.1.1",
+    "ethers": "^6.14.3",
     "lucide-react": "^0.511.0",
     "next": "15.3.2",
+    "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.0"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.0",
+    "web3": "^4.16.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

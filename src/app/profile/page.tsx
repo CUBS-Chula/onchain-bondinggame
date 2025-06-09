@@ -1,9 +1,14 @@
 "use client";
 import NavBar from "@/components/NavBar";
 import { TokenIcon } from "@web3icons/react";
+import { useWeb3 } from "@/app/contexts/Web3Context";
 import Image from "next/image";
 
+
 export default function ProfilePage() {
+
+  const { account, connect, isConnecting } = useWeb3();
+
   return (
     <div>
       <div className="bg-blue-600 relative" style={{ height: "200px" }}></div>
@@ -19,7 +24,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Username */}
-      <h1 className="text-center font-bold text-xl mt-2">CryptoWhale</h1>
+      <h1 className="text-center font-bold text-xl mt-2">{account}</h1>
 
       {/* Stats */}
       <div className="flex justify-around mt-4 text-center text-sm font-medium">
