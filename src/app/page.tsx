@@ -4,7 +4,7 @@ import OnchainLogo from "#/onchainlogo.png";
 import useIsPWA from "@/components/useIsPWA";
 import useIsIOS from "@/components/useIsIOS";
 import useIsMetaMaskBrowser from "@/components/useIsMetaMaskBrowser";
-import { SquarePlus, Wallet, QrCode } from "lucide-react";
+import { SquarePlus, Wallet } from "lucide-react";
 import Image from "next/image";
 import { useWeb3 } from "./contexts/Web3Context";
 import { useState } from "react";
@@ -114,7 +114,7 @@ export default function Home() {
         {isPWA ? (
           <div className="space-y-4">
             <div className="bg-white shadow rounded-lg px-6 py-3 flex items-center">
-              <span className="text-blue-600 mr-2">Now It's PWA</span>
+              <span className="text-blue-600 mr-2">Now It&apos;s PWA</span>
             </div>
             
             {account ? (
