@@ -15,17 +15,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white flex justify-center">
-      <Web3Provider>
-        <div
-          className="
+        <Web3Provider>
+          <div
+            className="
             w-full h-screen bg-gray 
             md:h-[calc(100vh-1rem*2)] md:w-[390px] md:border-gray-700 md:rounded-xl md:shadow-xl 
             md:mt-4 md:overflow-hidden md:relative
           "
-        >
-          {children}
-          <NavBar />
-        </div>
+          >
+            {children}
+            <NavBar />
+          </div>
         </Web3Provider>
       </body>
     </html>

@@ -23,7 +23,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Username */}
-      <h1 className="text-center font-bold text-xl mt-2">{account}</h1>
+      <h1 className="text-center font-bold text-xl mt-2">{account || "Please log in"}</h1>
 
       {/* Stats */}
       <div className="flex justify-around mt-4 text-center text-sm font-medium">
