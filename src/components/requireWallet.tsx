@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/contexts/Web3Context";
 
-export default function requireWallet({
+export default function RequireWallet({
   children,
 }: {
   children: React.ReactNode;
