@@ -6,57 +6,98 @@ import { useWeb3 } from "@/app/contexts/Web3Context";
 import { Wallet, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
+  console.log("🏗️ LoginPage component rendering");
+  
   const router = useRouter();
   const { account, connect, isConnecting, setAccount } = useWeb3();
   const [connectionError, setConnectionError] = useState("");
 
+  console.log("🔍 LoginPage state:");
+  console.log("  - account:", account);
+  console.log("  - isConnecting:", isConnecting);
+  console.log("  - connectionError:", connectionError);
+
   // Redirect to play page if already connected
   useEffect(() => {
+    console.log("🔍 LOGIN PAGE - useEffect triggered");
+    console.log("🔍 Current account:", account);
     if (account) {
+      console.log("✅ Account found, redirecting to /play");
       router.push("/play");
+    } else {
+      console.log("❌ No account found, staying on login page");
     }
   }, [account, router]);
 
   const handleConnect = async () => {
     try {
+      console.log("🚀 CONNECT BUTTON CLICKED");
+      console.log("🔍 Initial state check:");
+      console.log("  - isConnecting:", isConnecting);
+      console.log("  - current account:", account);
+      console.log("  - window.ethereum exists:", typeof window.ethereum !== "undefined");
+      
       setConnectionError("");
       console.log("🚀 Attempting to connect wallet...");
 
       // Check if any Web3 provider is available
       if (typeof window.ethereum === "undefined") {
+        console.log("❌ No window.ethereum found");
         throw new Error(
           "No Web3 wallet detected. Please open this website in your wallet browser (MetaMask, Trust Wallet, etc.)"
         );
       }
 
+      console.log("✅ window.ethereum found");
+      console.log("🔍 window.ethereum object:", window.ethereum);
+
       // Request account access - works with any Web3 wallet
-      await window.ethereum.request({ method: "eth_requestAccounts" });
+      console.log("🔄 Requesting account access...");
+      const requestResult = await window.ethereum.request({ method: "eth_requestAccounts" });
+      console.log("✅ eth_requestAccounts result:", requestResult);
 
       // Get the connected account
+      console.log("🔄 Getting accounts...");
       const accounts = await window.ethereum.request({
         method: "eth_accounts",
       });
+      console.log("✅ eth_accounts result:", accounts);
+      console.log("🔍 Number of accounts:", accounts.length);
+      
       if (accounts.length > 0) {
+        console.log("✅ Account found:", accounts[0]);
+        console.log("🔄 Setting account in context...");
+        
         // Update the Web3Context with the connected account
         setAccount(accounts[0]);
+        console.log("✅ setAccount called with:", accounts[0]);
+        
         // Also use the Web3Context connect method
+        console.log("🔄 Calling connect method...");
         await connect("metamask"); // This will work with any Web3 provider
         console.log("🎉 Wallet connected successfully!", accounts[0]);
+        console.log("🔄 About to redirect to /play");
       } else {
+        console.log("❌ No accounts in array");
         throw new Error(
           "No accounts found. Please make sure your wallet is unlocked."
         );
       }
     } catch (error: any) {
-      console.error("❌ Failed to connect wallet:", error);
+      console.error("❌ CONNECT ERROR:");
+      console.error("  - Error object:", error);
+      console.error("  - Error message:", error.message);
+      console.error("  - Error code:", error.code);
+      console.error("  - Full error:", JSON.stringify(error, null, 2));
+      
       if (error.code === 4001) {
-        setConnectionError(
-          "Connection rejected. Please approve the connection in your wallet."
-        );
+        const errorMsg = "Connection rejected. Please approve the connection in your wallet.";
+        console.log("🚫 User rejected connection");
+        setConnectionError(errorMsg);
       } else {
-        setConnectionError(
-          error.message || "Failed to connect wallet. Please try again."
-        );
+        const errorMsg = error.message || "Failed to connect wallet. Please try again.";
+        console.log("💥 Other error:", errorMsg);
+        setConnectionError(errorMsg);
       }
     }
   };

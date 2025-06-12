@@ -25,7 +25,7 @@ export default function ProfilePage() {
 
         {/* Username */}
         <h1 className="text-center font-bold text-xl mt-2">
-          {account || "Please log in"}
+          {account ? `${account.slice(0, 5)}...${account.slice(-5)}` : "Please log in"}
         </h1>
 
         {/* Stats */}
