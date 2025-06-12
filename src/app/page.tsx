@@ -108,55 +108,71 @@ export default function Home() {
         className="mb-20"
       />
       <div className="text-center">
-        <p className="text-lg text-gray-700">Add to home screen</p>
-        <p className="text-sm text-gray-500 mb-10">for great experience</p>
+        <p className="text-lg text-gray-700">Connect your wallet to play</p>
+        <p className="text-sm text-gray-500 mb-10">Secure blockchain gaming</p>
 
-        {isPWA ? (
-          <div className="space-y-4">
-            <div className="bg-white shadow rounded-lg px-6 py-3 flex items-center">
-              <span className="text-blue-600 mr-2">Now It&apos;s PWA</span>
+        <div className="space-y-4">
+          {account ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg px-6 py-4 flex items-center justify-center">
+                <span className="text-green-700 font-medium">
+                  ✅ Connected: {account.slice(0, 6)}...{account.slice(-4)}
+                </span>
+              </div>
+              
+              <button
+                onClick={() => window.location.href = '/play'}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg transform hover:scale-105"
+              >
+                🎮 Start Playing
+              </button>
             </div>
-            
-            {account ? (
-              <div className="bg-white shadow rounded-lg px-6 py-3 flex items-center">
-                <span className="text-green-600">Connected: {account.slice(0, 6)}...{account.slice(-4)}</span>
-              </div>
-            ) : showQR ? (
-              <div className="bg-white shadow rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2">Scan QR code with your wallet app</p>
-                <div className="w-48 h-48 mx-auto bg-white flex items-center justify-center">
-                  <div id="walletconnect-qrcode" className="w-full h-full">
-                    {/* This container will be populated by WalletConnect's QR modal */}
-                  </div>
+          ) : showQR ? (
+            <div className="bg-white shadow-lg rounded-lg p-6 border">
+              <p className="text-sm text-gray-600 mb-4">Scan QR code with your wallet app</p>
+              <div className="w-48 h-48 mx-auto bg-white flex items-center justify-center border rounded-lg">
+                <div id="walletconnect-qrcode" className="w-full h-full">
+                  {/* This container will be populated by WalletConnect's QR modal */}
                 </div>
-                <button
-                  onClick={() => setShowQR(false)}
-                  className="mt-4 text-sm text-blue-600 hover:text-blue-700"
-                >
-                  Cancel
-                </button>
               </div>
-            ) : (
+              <button
+                onClick={() => setShowQR(false)}
+                className="mt-4 text-sm text-blue-600 hover:text-blue-700 underline"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
               <button
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="bg-white shadow rounded-lg px-6 py-3 flex items-center hover:bg-gray-50 transition-colors"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg transform hover:scale-105 flex items-center justify-center"
               >
-                <Wallet className="text-blue-600 w-5 h-5 mr-2" />
-                <span className="text-blue-600">
-                  {isConnecting ? 'Connecting...' : 
-                   isMetaMaskBrowser ? 'Connect with MetaMask' :
-                   isIOS ? 'Connect with WalletConnect' : 'Connect Wallet'}
-                </span>
+                <Wallet className="w-6 h-6 mr-3" />
+                {isConnecting ? (
+                  <span className="flex items-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Connecting...
+                  </span>
+                ) : (
+                  'Login with Wallet'
+                )}
               </button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white shadow rounded-lg px-6 py-3 flex items-center">
-            <span className="text-blue-600 mr-2">Add to Home Screen</span>
-            <SquarePlus className="text-blue-600 w-5 h-5" />
-          </div>
-        )}
+              
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-2">First time here?</p>
+                <button
+                  onClick={handleConnect}
+                  className="text-orange-600 font-semibold text-lg hover:text-orange-700 underline decoration-2 underline-offset-4 hover:decoration-orange-700 transition-all duration-200"
+                >
+                  Register Now - It's Free! 🎉
+                </button>
+                <p className="text-xs text-gray-400 mt-2">No account needed - just connect your wallet!</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
