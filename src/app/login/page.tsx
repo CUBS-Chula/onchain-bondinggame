@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/contexts/Web3Context";
 import { Wallet, ArrowLeft } from "lucide-react";
+import { authApi, apiUtils } from "@/components/apiUtils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,49 +40,11 @@ export default function LoginPage() {
         
         // Send login request to backend
         try {
-          const requestBody = {
-            userId: "",
-            walletId: accounts[0]
-          };
-          
-          let response = await fetch('http://localhost:3001/api/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody)
-          });
-          
-          // If login fails (user doesn't exist), try to register
-          if (response.status === 400) {
-            // Generate a username based on wallet address
-            const username = `user_${accounts[0].slice(2, 8)}`;
-            
-            const registerBody = {
-              userId: username,
-              walletId: accounts[0],
-              avatarId: 1 // Default avatar
-            };
-            
-            response = await fetch('http://localhost:3001/api/auth/register', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(registerBody)
-            });
-          }
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API failed: ${response.status} - ${errorText}`);
-          }
-
-          const loginData = await response.json();
+          const loginData = await authApi.login(accounts[0]);
           
           // Save token to localStorage if present
           if (loginData.token) {
-            localStorage.setItem('Token', loginData.token);
+            apiUtils.saveToken(loginData.token);
             setIsConnected(true); // Set connected state
           }
         } catch (apiError: any) {

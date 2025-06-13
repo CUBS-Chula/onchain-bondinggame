@@ -2,6 +2,7 @@
 import { cn } from "@/components/cn";
 import { useState, useEffect } from "react";
 import { useWeb3 } from "../contexts/Web3Context";
+import { authApi, UserProfile } from "@/components/apiUtils";
 
 interface User {
   userId: string;
@@ -16,36 +17,31 @@ interface User {
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUserData, setCurrentUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { account } = useWeb3(); // Get user session from Web3 context
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3001/api/auth/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        console.log('API Response:', data); // Debug log
         
-        // Check if data is an array, if not, try to extract the array
-        let usersArray: User[] = [];
-        if (Array.isArray(data)) {
-          usersArray = data;
-        } else if (data && Array.isArray(data.users)) {
-          usersArray = data.users;
-        } else if (data && Array.isArray(data.data)) {
-          usersArray = data.data;
-        } else {
-          throw new Error('Invalid data format: expected an array of users');
-        }
-        
-        // Sort users by score in descending order
-        const sortedUsers = usersArray.sort((a: User, b: User) => b.score - a.score);
+        // Fetch all users for leaderboard
+        const sortedUsers = await authApi.getAllUsers();
         setUsers(sortedUsers);
+
+        // Fetch current user data if token exists and account is available
+        if (account) {
+          try {
+            const currentUserResult = await authApi.getMe();
+            setCurrentUserData(currentUserResult);
+          } catch (userError) {
+            console.error('Failed to fetch current user data:', userError);
+            // Don't set error state for current user failure, just continue without it
+          }
+        }
+        
       } catch (err) {
         console.error('Fetch error:', err); // Debug log
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -54,8 +50,8 @@ export default function LeaderboardPage() {
       }
     };
 
-    fetchUsers();
-  }, []);
+    fetchData();
+  }, [account]);
 
   if (loading) {
     return (
@@ -76,11 +72,11 @@ export default function LeaderboardPage() {
   const topThree = users.slice(0, 3);
   const remainingUsers = users.slice(3);
   
-  // Mock current user stats - replace with actual user data based on connected wallet
-  const currentUser = {
-    username: account ? account.slice(0, 6) + "..." + account.slice(-4) : "You",
-    score: 450,
-    rank: users.findIndex(user => user.walletId === account) + 1 || users.length + 1
+  // Calculate current user's rank in the leaderboard
+  const getCurrentUserRank = () => {
+    if (!currentUserData) return users.length + 1;
+    const userIndex = users.findIndex(user => user.walletId === currentUserData.walletId);
+    return userIndex >= 0 ? userIndex + 1 : users.length + 1;
   };
 
   return (
@@ -177,21 +173,21 @@ export default function LeaderboardPage() {
         </div>
       </div>
       
-      {/* Your Stats Section - Only show if user is logged in */}
-      {account && (
+      {/* Your Stats Section - Only show if user is logged in and has current user data */}
+      {account && currentUserData && (
         <div className={cn("fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-gray-200 px-4 py-3 z-40")}>
           <div className={cn("bg-gray-100 border border-gray-300 p-3 flex items-center justify-between")}>
             <div className="flex items-center gap-3">
               <div className={cn("w-8 h-8 bg-gray-300 flex items-center justify-center")}>
-                <span className="text-sm font-bold text-gray-600">{currentUser.username.charAt(0).toUpperCase()}</span>
+                <span className="text-sm font-bold text-gray-600">{currentUserData.username.charAt(0).toUpperCase()}</span>
               </div>
               <div>
-                <div className="font-medium text-sm">{currentUser.username}</div>
-                <div className="text-xs text-gray-500">Rank #{currentUser.rank}</div>
+                <div className="font-medium text-sm">{currentUserData.username}</div>
+                <div className="text-xs text-gray-500">Rank #{getCurrentUserRank()}</div>
               </div>
             </div>
             <div className="text-right">
-              <div className="font-bold text-lg">{currentUser.score}</div>
+              <div className="font-bold text-lg">{currentUserData.score}</div>
               <div className="text-xs text-gray-500">points</div>
             </div>
           </div>

@@ -5,18 +5,7 @@ import Image from "next/image";
 import RequireWallet from "@/components/requireWallet";
 import RequireWalletNoti from "@/components/requireWalletNoti";
 import { useState, useEffect } from "react";
-
-interface UserProfile {
-  _id: string;
-  userId: string;
-  username: string;
-  walletId: string;
-  friendList: any[];
-  avatarId: string;
-  rank: number;
-  score: number;
-  favoriteChain: string[];
-}
+import { authApi, UserProfile } from "@/components/apiUtils";
 
 export default function ProfilePage() {
   const { account } = useWeb3();
@@ -27,30 +16,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('Token');
-        if (!token) {
-          setError('No authentication token found');
-          return;
-        }
-
-        const response = await fetch('http://localhost:3001/api/auth/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch profile: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success && data.data) {
-          setProfile(data.data);
-        } else {
-          setError('Invalid response format');
-        }
+        const profileData = await authApi.getMe();
+        setProfile(profileData);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch profile');
         console.error('Profile fetch error:', err);
