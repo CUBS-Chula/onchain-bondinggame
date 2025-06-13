@@ -22,8 +22,8 @@ export default function LoginPage() {
     console.log("🔍 LOGIN PAGE - useEffect triggered");
     console.log("🔍 Current account:", account);
     if (account) {
-      console.log("✅ Account found, redirecting to /play");
-      router.push("/play");
+      console.log("✅ Account found, redirecting to Home");
+      router.push("/");
     } else {
       console.log("❌ No account found, staying on login page");
     }
