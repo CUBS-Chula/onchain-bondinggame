@@ -1,0 +1,13 @@
+node_modules
+
+npm-debug.log
+
+.next
+out
+dist
+
+.vscode
+*.swp
+.DS_Store
+.git
+.gitignore
