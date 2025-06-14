@@ -42,6 +42,7 @@ export default function GamePage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const playerChoiceRef = useRef<Choice>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { account } = useWeb3();
@@ -95,61 +96,143 @@ export default function GamePage() {
     });
 
     newSocket.on('player-joined', (data: { guestData: OpponentData, roomData: Room }) => {
-      console.log('Player joined:', data);
+      console.log('🎯 HOST: Player joined event received:', data);
+      console.log('🎯 HOST: Setting opponent data to:', data.guestData);
       setOpponentData(data.guestData);
       setRoom(data.roomData);
       roomRef.current = data.roomData;
-      setGameState('countdown');
-      startCountdown();
+      
+      // Don't change game state if we're already in result state (game finished)
+      if (gameState !== 'result') {
+        console.log('Player joined, setting opponent data and staying in waiting state');
+        setGameState('waiting-for-player');
+      } else {
+        console.log('Player joined - keeping result state (game already finished)');
+      }
+      
+      // Clear any error messages when opponent joins
+      setErrorMessage('');
     });
 
     newSocket.on('room-joined-success', (data: { hostData: OpponentData, roomData: Room }) => {
-      console.log('Successfully joined room:', data);
+      console.log('🎯 GUEST: Room joined success event received:', data);
+      console.log('🎯 GUEST: Setting opponent data to:', data.hostData);
+      console.log('🎯 GUEST: Current game state:', gameState);
+      
       setOpponentData(data.hostData);
       setRoom(data.roomData);
       roomRef.current = data.roomData;
       setPlayerRole('guest');
-      setGameState('countdown');
       
-      setTimeout(() => {
-        startCountdown();
-      }, 100);
+      // Don't change game state if we're already in result state (game finished)
+      if (gameState !== 'result') {
+        console.log('Room joined success - setting state to waiting-for-player');
+        setGameState('waiting-for-player');
+      } else {
+        console.log('Room joined success - keeping result state (game already finished)');
+      }
     });
 
-    newSocket.on('game-result', (data: { playerChoice: Choice, opponentChoice: Choice, result: string }) => {
+    newSocket.on('game-result', async (data: { playerChoice: Choice, opponentChoice: Choice, result: string }) => {
       console.log('Game result received:', data);
       if (countdownTimerRef.current) {
         console.log('Game result received, clearing countdown timer');
         clearInterval(countdownTimerRef.current);
         countdownTimerRef.current = null;
       }
+      
+      // Determine points earned based on result
+      let points = 1; // Default for lose
+      if (data.result.includes('Win')) {
+        points = 3;
+      } else if (data.result.includes('Draw')) {
+        points = 2;
+      }
+      
       setPlayerChoice(data.playerChoice);
       setOpponentChoice(data.opponentChoice);
       setResult(data.result);
+      setPointsEarned(points);
       setGameState('result');
+      
+      // Refresh user data to get updated score and friend list
+      try {
+        const updatedUserData = await authApi.getMe();
+        setCurrentUser(updatedUserData);
+        currentUserRef.current = updatedUserData;
+        console.log('Updated user data after game:', updatedUserData);
+      } catch (error) {
+        console.error('Failed to refresh user data after game:', error);
+      }
     });
 
     newSocket.on('room-error', (error: string) => {
       console.error('Room error:', error);
       setErrorMessage(`Room error: ${error}`);
-      // Navigate back to lobby on room error after showing message
-      setTimeout(() => {
-        router.push('/play');
-      }, 3000);
+      
+      // Only redirect if we're not in result state (game hasn't finished yet)
+      if (gameState !== 'result') {
+        // Navigate back to lobby on room error after showing message
+        setTimeout(() => {
+          router.push('/play');
+        }, 3000);
+      } else {
+        // If game is finished, don't redirect, just show the error
+        setTimeout(() => setErrorMessage(''), 5000);
+      }
     });
 
     newSocket.on('player-temporarily-disconnected', () => {
-      setErrorMessage('Opponent temporarily disconnected, waiting for reconnection...');
-      // Clear error after 15 seconds
-      setTimeout(() => setErrorMessage(''), 15000);
+      // Only show disconnect message if we're in the middle of an active game
+      console.log('Received player-temporarily-disconnected event. Game state:', gameState, 'Is connected:', isConnected);
+      if (gameState === 'countdown' && isConnected) {
+        console.log('Showing temporary disconnection message');
+        setErrorMessage('Opponent temporarily disconnected, waiting for reconnection...');
+        // Clear error after 10 seconds
+        setTimeout(() => setErrorMessage(''), 10000);
+      } else {
+        console.log('Not showing disconnect message - not in active gameplay');
+      }
     });
 
     newSocket.on('player-disconnected', () => {
-      setErrorMessage('Opponent disconnected');
-      // Navigate back to lobby after showing message
+      // Only redirect if we're not in result state (game hasn't finished yet)
+      if (gameState !== 'result') {
+        setErrorMessage('Opponent disconnected');
+        // Navigate back to lobby after showing message
+        setTimeout(() => {
+          router.push('/play');
+        }, 3000);
+      } else {
+        // If game is finished, just show a message but don't redirect
+        setErrorMessage('Opponent left the game');
+        setTimeout(() => setErrorMessage(''), 5000);
+      }
+    });
+
+    newSocket.on('player-ready', (data: { playerName: string, readyCount: number, totalPlayers: number }) => {
+      console.log('Player ready event received:', data);
+      if (data.readyCount === 1) {
+        setErrorMessage(`${data.playerName} is ready to start! Click "Start Game" when you're ready.`);
+        // Clear message after 5 seconds
+        setTimeout(() => setErrorMessage(''), 5000);
+      }
+    });
+
+    newSocket.on('start-countdown', () => {
+      console.log('Server authorized countdown start');
+      setGameState('countdown');
       setTimeout(() => {
-        router.push('/play');
-      }, 3000);
+        startCountdown();
+      }, 100);
+    });
+
+    newSocket.on('player-reconnected', (data: { reconnectedPlayer: OpponentData, roomData: Room }) => {
+      console.log('Player reconnected:', data);
+      setOpponentData(data.reconnectedPlayer);
+      setRoom(data.roomData);
+      roomRef.current = data.roomData;
+      // Don't automatically start game on reconnection
     });
 
     return () => {
@@ -264,18 +347,21 @@ export default function GamePage() {
     }
   };
 
-  const resetGame = () => {
-    console.log('Resetting game, clearing any existing timers');
-    setPlayerChoice(null);
-    setOpponentChoice(null);
-    setResult('');
-    setGameState('waiting-for-player');
-    playerChoiceRef.current = null;
-    setCountdown(10);
-    if (countdownTimerRef.current) {
-      console.log('Clearing timer during game reset');
-      clearInterval(countdownTimerRef.current);
-      countdownTimerRef.current = null;
+  const startGame = () => {
+    console.log('Start Game button clicked - requesting game start from server');
+    
+    const currentSocket = socketRef.current;
+    const currentRoom = roomRef.current;
+    const currentUser = currentUserRef.current;
+    
+    if (currentSocket && currentRoom && currentUser) {
+      console.log('Sending start-game request to server');
+      currentSocket.emit('start-game', {
+        roomId: currentRoom.id,
+        userId: currentUser.userId
+      });
+    } else {
+      console.error('Cannot request game start - missing dependencies');
     }
   };
 
@@ -355,7 +441,7 @@ export default function GamePage() {
           </div>
         )}
 
-        {gameState === 'waiting-for-player' && (
+        {gameState === 'waiting-for-player' && !opponentData && (
           <div className="text-center mb-6">
             <div className="text-lg font-semibold mb-2 text-orange-600">
               ⏳ Waiting for opponent...
@@ -363,6 +449,29 @@ export default function GamePage() {
             <div className="text-sm text-gray-500">
               Share room code {roomId} with your friend
             </div>
+            <div className="text-xs text-gray-400 mt-2">
+              Debug: opponentData = {JSON.stringify(opponentData)}
+            </div>
+          </div>
+        )}
+
+        {gameState === 'waiting-for-player' && opponentData && (
+          <div className="text-center mb-6">
+            <div className="text-lg font-semibold mb-2 text-green-600">
+              ✅ Both players ready!
+            </div>
+            <div className="text-sm text-gray-500 mb-4">
+              Click "Start Game" when you're ready to play
+            </div>
+            <div className="text-xs text-gray-400 mb-2">
+              Debug: opponentData = {JSON.stringify(opponentData)}
+            </div>
+            <button 
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 shadow-lg"
+            >
+              🚀 Start Game
+            </button>
           </div>
         )}
 
@@ -441,19 +550,41 @@ export default function GamePage() {
               result.includes('Lose') ? 'text-red-600' : 'text-yellow-600')}>
               {result}
             </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={resetGame} 
-                className={cn("flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg")}
-              >
-                🔄 Play Again
-              </button>
+            
+            {/* Points Earned Notification */}
+            {pointsEarned !== null && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-4">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-blue-800 mb-1">
+                    🎯 Points Earned: +{pointsEarned}
+                  </div>
+                  <div className="text-xs text-blue-600">
+                    {pointsEarned === 3 && '🏆 Victory Bonus!'}
+                    {pointsEarned === 2 && '🤝 Draw Points!'}
+                    {pointsEarned === 1 && '💪 Participation Points!'}
+                  </div>
+                  {opponentData && (
+                    <div className="text-xs text-purple-600 mt-2">
+                      👥 Added {opponentData.username} as friend!
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Only show Back to Lobby button */}
+            <div className="flex justify-center">
               <button 
                 onClick={backToLobby} 
-                className={cn("flex-1 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300")}
+                className={cn("bg-gray-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300")}
               >
-                🏠 Lobby
+                🏠 Back to Lobby
               </button>
+            </div>
+
+            {/* Game finished message */}
+            <div className="text-center text-sm text-gray-600 mt-4">
+              🎉 Game completed! Thanks for playing!
             </div>
           </div>
         )}
