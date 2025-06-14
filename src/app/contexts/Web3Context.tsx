@@ -100,7 +100,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
 
   const connect = async (walletType: 'metamask' | 'coinbase' | 'walletconnect') => {
     if (typeof window === 'undefined' || !window.ethereum) {
-      alert('Please install a Web3 wallet to use this application')
+      console.error('Web3 wallet not found')
       return
     }
 
@@ -137,7 +137,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setSelectedWallet(walletType)
     } catch (error) {
       console.error('Failed to connect wallet:', error)
-      alert(error instanceof Error ? error.message : 'Failed to connect wallet')
+      // Error handling moved to component level
     } finally {
       setIsConnecting(false)
     }

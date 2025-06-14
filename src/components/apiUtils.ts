@@ -103,6 +103,7 @@ export const authApi = {
       
       const registerBody = {
         userId: username,
+        username: username, // Add the missing username field
         walletId: walletId,
         avatarId: 1 // Default avatar
       };

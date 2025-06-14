@@ -27,7 +27,7 @@ export default function RegisterPage() {
   const [profileImage, setProfileImage] = useState<string>('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [errors, setErrors] = useState<{ nickname?: string; blockchains?: string }>({})
+  const [errors, setErrors] = useState<{ nickname?: string; blockchains?: string; image?: string; general?: string }>({})
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -50,9 +50,13 @@ export default function RegisterPage() {
     const file = event.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('Image size must be less than 5MB')
+        setErrors({ ...errors, image: 'Image size must be less than 5MB' })
         return
       }
+      
+      // Clear any existing image error
+      const { image, ...otherErrors } = errors
+      setErrors(otherErrors)
       
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -106,7 +110,7 @@ export default function RegisterPage() {
       router.push('/profile')
     } catch (error) {
       console.error('Failed to save profile:', error)
-      alert('Failed to save profile. Please try again.')
+      setErrors({ ...errors, general: 'Failed to save profile. Please try again.' })
     } finally {
       setIsSaving(false)
     }
