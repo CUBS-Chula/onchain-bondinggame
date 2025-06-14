@@ -88,7 +88,7 @@ export const authApi = {
       walletId: walletId
     };
 
-    let response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,30 +96,9 @@ export const authApi = {
       body: JSON.stringify(requestBody)
     });
 
-    // If login fails (user doesn't exist), try to register
-    if (response.status === 400) {
-      // Generate a username based on wallet address
-      const username = `user_${walletId.slice(2, 8)}`;
-      
-      const registerBody = {
-        userId: username,
-        username: username, // Add the missing username field
-        walletId: walletId,
-        avatarId: 1 // Default avatar
-      };
-
-      response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registerBody)
-      });
-    }
-
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API failed: ${response.status} - ${errorText}`);
+      throw new Error(`Login failed: ${response.status} - ${errorText}`);
     }
 
     return await response.json();

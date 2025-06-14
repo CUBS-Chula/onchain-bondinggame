@@ -15,6 +15,7 @@ export default function LoginPage() {
   const handleConnect = async () => {
     try {
       setConnectionError("");
+      setIsConnected(false); // Reset connection state
 
       // Check if any Web3 provider is available
       if (typeof window.ethereum === "undefined") {
@@ -32,24 +33,37 @@ export default function LoginPage() {
       });
       
       if (accounts.length > 0) {
-        // Update the Web3Context with the connected account
-        setAccount(accounts[0]);
-        
-        // Also use the Web3Context connect method
-        await connect("metamask"); // This will work with any Web3 provider
-        
-        // Send login request to backend
+        // Send login request to backend FIRST - before setting wallet state
         try {
           const loginData = await authApi.login(accounts[0]);
           
           // Save token to localStorage if present
           if (loginData.token) {
             apiUtils.saveToken(loginData.token);
-            setIsConnected(true); // Set connected state
+            
+            // Only set wallet connection state AFTER successful backend auth
+            setAccount(accounts[0]);
+            await connect("metamask"); // This will work with any Web3 provider
+            setIsConnected(true); // Only set connected if backend login succeeds
+          } else {
+            throw new Error("No authentication token received");
           }
         } catch (apiError: any) {
-          // Don't block the wallet connection if API fails
-          console.error("API error:", apiError);
+          console.error("Backend login failed:", apiError);
+          
+          // Check for specific error types
+          if (apiError.message?.includes('fetch') || apiError.message?.includes('Failed to fetch')) {
+            throw new Error("Cannot connect to server. Please make sure the backend is running on localhost:3001");
+          } else if (apiError.message?.includes('400') || apiError.message?.includes('Login failed: 400')) {
+            // Auto-redirect unregistered users to registration page
+            console.log("User not registered, redirecting to registration page...");
+            router.push("/register");
+            return; // Exit early to prevent error state
+          } else if (apiError.message?.includes('Network') || apiError.message?.includes('network')) {
+            throw new Error("Network error. Please check your connection and try again.");
+          } else {
+            throw new Error(`Authentication failed: ${apiError.message || 'Unknown error'}`);
+          }
         }
       } else {
         throw new Error(
@@ -101,8 +115,14 @@ export default function LoginPage() {
 
           {/* Connection Error */}
           {connectionError && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-3">
               <div className="text-red-800 text-sm">❌ {connectionError}</div>
+              <button
+                onClick={() => setConnectionError("")}
+                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors"
+              >
+                Try Again
+              </button>
             </div>
           )}
 
