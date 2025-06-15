@@ -5,8 +5,28 @@ import Image from "next/image";
 import Link from "next/link";
 import RequireWallet from "@/components/requireWallet";
 import RequireWalletNoti from "@/components/requireWalletNoti";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { authApi, UserProfile } from "@/components/apiUtils";
+
+// Define chain information
+const chainInfo: { [key: string]: { name: string; symbol: string; color: string } } = {
+  ethereum: { name: 'Ethereum', symbol: 'ETH', color: 'bg-blue-500' },
+  bitcoin: { name: 'Bitcoin', symbol: 'BTC', color: 'bg-orange-500' },
+  solana: { name: 'Solana', symbol: 'SOL', color: 'bg-green-500' },
+  bnb: { name: 'BNB Chain', symbol: 'BNB', color: 'bg-yellow-500' },
+  base: { name: 'Base', symbol: 'BASE', color: 'bg-blue-600' },
+  arbitrum: { name: 'Arbitrum', symbol: 'ARB', color: 'bg-blue-800' },
+  polygon: { name: 'Polygon', symbol: 'MATIC', color: 'bg-purple-500' },
+  optimism: { name: 'Optimism', symbol: 'OP', color: 'bg-red-600' },
+  avalanche: { name: 'Avalanche', symbol: 'AVAX', color: 'bg-red-500' },
+  cosmos: { name: 'Cosmos', symbol: 'ATOM', color: 'bg-purple-800' },
+  sui: { name: 'Sui', symbol: 'SUI', color: 'bg-blue-400' },
+  aptos: { name: 'Aptos', symbol: 'APT', color: 'bg-indigo-500' },
+  linea: { name: 'Linea', symbol: 'LINEA', color: 'bg-green-700' },
+  starknet: { name: 'Starknet', symbol: 'STRK', color: 'bg-gray-700' },
+  cardano: { name: 'Cardano', symbol: 'ADA', color: 'bg-blue-700' },
+  polkadot: { name: 'Polkadot', symbol: 'DOT', color: 'bg-pink-500' },
+};
 
 export default function ProfilePage() {
   const { account } = useWeb3();
@@ -90,27 +110,38 @@ export default function ProfilePage() {
 
             {/* Button */}
             <div className="flex justify-center mt-6">
+              <Link href="/play">
               <button className="bg-black text-white py-2 px-6 rounded-md hover:bg-gray-800 transition">
                 Play Rock Paper Scissors
               </button>
+              </Link>
             </div>
 
             {/* Favorite Chains */}
             <section className="mt-8 px-6">
               <p className="text-gray-500 mb-2">Favorite Chains</p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto">
                 {profile.favoriteChain.length > 0 ? (
-                  profile.favoriteChain.map((chain, index) => (
-                    <button key={index} className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1 text-sm">
-                      <TokenIcon
-                        symbol={chain.toLowerCase()}
-                        variant="branded"
-                        size="20"
-                        color="#000000"
-                      />
-                      {chain}
-                    </button>
-                  ))
+                  profile.favoriteChain.map((chain, index) => {
+                    const chainData = chainInfo[chain.toLowerCase()] || { name: chain, symbol: chain };
+                    return (
+                      <button 
+                        key={index} 
+                        className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1 text-sm mb-1 hover:bg-gray-50 transition"
+                      >
+                        <TokenIcon
+                          symbol={chain.toLowerCase()}
+                          variant="branded"
+                          size="20"
+                          color="#000000"
+                        />
+                        <span>{chainData.name}</span>
+                        {chainData.symbol && chainData.symbol !== chainData.name && (
+                          <span className="text-xs text-gray-500">({chainData.symbol})</span>
+                        )}
+                      </button>
+                    );
+                  })
                 ) : (
                   <p className="text-gray-400 text-sm">No favorite chains selected</p>
                 )}

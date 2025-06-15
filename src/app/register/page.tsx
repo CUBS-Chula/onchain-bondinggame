@@ -6,13 +6,21 @@ import { useWeb3 } from '@/app/contexts/Web3Context'
 import { cn } from '@/components/cn'
 
 const blockchains = [
-  { id: 'bitcoin', name: 'Bitcoin', symbol: '₿', color: 'bg-orange-500' },
-  { id: 'ethereum', name: 'Ethereum', symbol: 'Ξ', color: 'bg-blue-500' },
-  { id: 'binance', name: 'Binance Smart Chain', symbol: 'BNB', color: 'bg-yellow-500' },
-  { id: 'polygon', name: 'Polygon', symbol: 'MATIC', color: 'bg-purple-500' },
+  { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', color: 'bg-orange-500' },
+  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', color: 'bg-blue-500' },
   { id: 'solana', name: 'Solana', symbol: 'SOL', color: 'bg-green-500' },
-  { id: 'cardano', name: 'Cardano', symbol: 'ADA', color: 'bg-blue-700' },
+  { id: 'binance', name: 'BNB Chain', symbol: 'BNB', color: 'bg-yellow-500' },
+  { id: 'base', name: 'Base', symbol: 'BASE', color: 'bg-blue-600' },
+  { id: 'arbitrum', name: 'Arbitrum', symbol: 'ARB', color: 'bg-blue-800' },
+  { id: 'polygon', name: 'Polygon', symbol: 'MATIC', color: 'bg-purple-500' },
+  { id: 'optimism', name: 'Optimism', symbol: 'OP', color: 'bg-red-600' },
   { id: 'avalanche', name: 'Avalanche', symbol: 'AVAX', color: 'bg-red-500' },
+  { id: 'cosmos', name: 'Cosmos', symbol: 'ATOM', color: 'bg-purple-800' },
+  { id: 'sui', name: 'Sui', symbol: 'SUI', color: 'bg-blue-400' },
+  { id: 'aptos', name: 'Aptos', symbol: 'APT', color: 'bg-indigo-500' },
+  { id: 'linea', name: 'Linea', symbol: 'LINEA', color: 'bg-green-700' },
+  { id: 'starknet', name: 'Starknet', symbol: 'STRK', color: 'bg-gray-700' },
+  { id: 'cardano', name: 'Cardano', symbol: 'ADA', color: 'bg-blue-700' },
   { id: 'polkadot', name: 'Polkadot', symbol: 'DOT', color: 'bg-pink-500' },
 ]
 
