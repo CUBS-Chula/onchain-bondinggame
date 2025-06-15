@@ -19,15 +19,15 @@ const blockchains = [
 export default function RegisterPage() {
   const { account, connect, isConnecting, selectedWallet } = useWeb3()
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   
   const [nickname, setNickname] = useState('')
   const [selectedBlockchains, setSelectedBlockchains] = useState<string[]>([])
-  const [profileImage, setProfileImage] = useState<string>('')
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('1')
+  const [selectedBanner, setSelectedBanner] = useState<string>('1')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [errors, setErrors] = useState<{ nickname?: string; blockchains?: string; image?: string; general?: string }>({})
+  const [errors, setErrors] = useState<{ nickname?: string; blockchains?: string; general?: string }>({})
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,26 +45,6 @@ export default function RegisterPage() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isDropdownOpen])
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setErrors({ ...errors, image: 'Image size must be less than 5MB' })
-        return
-      }
-      
-      // Clear any existing image error
-      const { image, ...otherErrors } = errors
-      setErrors(otherErrors)
-      
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const validateForm = () => {
     const newErrors: { nickname?: string; blockchains?: string } = {}
@@ -91,26 +71,38 @@ export default function RegisterPage() {
     setIsSaving(true)
     
     try {
-      // Simulate API call to save profile data
-      const profileData = {
-        wallet: account,
-        nickname: nickname.trim(),
-        favoriteBlockchains: selectedBlockchains,
-        profileImage: profileImage,
-        createdAt: new Date().toISOString()
+      // Import authApi here to avoid issues
+      const { authApi } = await import('@/components/apiUtils');
+      
+      // Check if account exists
+      if (!account) {
+        throw new Error("Wallet not connected");
       }
       
-      // Save to localStorage (in real app, this would be an API call)
-      localStorage.setItem('userProfile', JSON.stringify(profileData))
+      // Register user with backend API
+      const registrationData = {
+        username: nickname.trim(),
+        walletId: account,
+        avatarId: selectedAvatar,
+        bannerId: selectedBanner,
+        favoriteChain: selectedBlockchains
+      }
       
-      // Wait a bit to show loading state
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const result = await authApi.register(registrationData);
       
-      // Redirect to profile page
-      router.push('/profile')
-    } catch (error) {
-      console.error('Failed to save profile:', error)
-      setErrors({ ...errors, general: 'Failed to save profile. Please try again.' })
+      if (result.token) {
+        // Save token to localStorage
+        const { apiUtils } = await import('@/components/apiUtils');
+        apiUtils.saveToken(result.token);
+        
+        // Redirect to profile page
+        router.push('/profile')
+      } else {
+        throw new Error("Registration failed - no token received");
+      }
+    } catch (error: any) {
+      console.error('Registration failed:', error)
+      setErrors({ ...errors, general: error.message || 'Failed to create profile. Please try again.' })
     } finally {
       setIsSaving(false)
     }
@@ -200,30 +192,53 @@ export default function RegisterPage() {
         </div>
 
         <div className={cn("bg-white rounded-2xl shadow-xl p-6 mb-16")}>
-          {/* Profile Image Upload */}
+          {/* Avatar Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Profile Photo</label>
-            <div className={cn("relative w-32 h-32 mx-auto")}>
-              <div className={cn("w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center overflow-hidden")}>
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl">👤</span>
-                )}
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className={cn("absolute bottom-0 right-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors")}
-              >
-                📷
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
+            <label className="block text-sm font-medium text-gray-700 mb-3">Choose Avatar</label>
+            <div className="grid grid-cols-4 gap-3">
+              {[1, 2, 3, 4, 5, 6, 7].map((avatarId) => (
+                <button
+                  key={avatarId}
+                  onClick={() => setSelectedAvatar(avatarId.toString())}
+                  className={cn(
+                    "w-16 h-16 rounded-full border-2 transition-all duration-200 overflow-hidden",
+                    selectedAvatar === avatarId.toString()
+                      ? "border-blue-500 ring-2 ring-blue-200 scale-110"
+                      : "border-gray-300 hover:border-gray-400"
+                  )}
+                >
+                  <img 
+                    src={`/avatar/${avatarId}.png`} 
+                    alt={`Avatar ${avatarId}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Banner Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Choose Banner</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4, 5, 6].map((bannerId) => (
+                <button
+                  key={bannerId}
+                  onClick={() => setSelectedBanner(bannerId.toString())}
+                  className={cn(
+                    "h-20 rounded-lg border-2 transition-all duration-200 overflow-hidden",
+                    selectedBanner === bannerId.toString()
+                      ? "border-blue-500 ring-2 ring-blue-200"
+                      : "border-gray-300 hover:border-gray-400"
+                  )}
+                >
+                  <img 
+                    src={`/banner/${bannerId}.png`} 
+                    alt={`Banner ${bannerId}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
             </div>
           </div>
 
@@ -250,6 +265,7 @@ export default function RegisterPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Favorite Blockchains *</label>
             <div className="relative" ref={dropdownRef}>
               <button
+                type="button"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className={cn(
                   "w-full flex items-center justify-between px-4 py-3 border rounded-xl bg-white hover:border-gray-400 transition-colors",
@@ -284,52 +300,45 @@ export default function RegisterPage() {
               )}
               
               {isDropdownOpen && (
-                <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}>
-                  <div 
-                    className="absolute bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                    style={{
-                      top: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
-                      left: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().left + window.scrollX : 0,
-                      width: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().width : 'auto'
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {blockchains.map((blockchain, index) => {
-                      const isSelected = selectedBlockchains.includes(blockchain.id)
-                      const isFirst = index === 0
-                      const isLast = index === blockchains.length - 1
-                      return (
-                        <button
-                          key={blockchain.id}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedBlockchains(prev => prev.filter(id => id !== blockchain.id))
-                            } else {
-                              setSelectedBlockchains(prev => [...prev, blockchain.id])
-                            }
-                          }}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
-                            isSelected && "bg-blue-50",
-                            isFirst && "rounded-t-xl",
-                            isLast && "rounded-b-xl"
-                          )}
-                        >
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold", blockchain.color)}>
-                              {blockchain.symbol}
-                            </div>
-                            <span className="text-left">{blockchain.name}</span>
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  {blockchains.map((blockchain, index) => {
+                    const isSelected = selectedBlockchains.includes(blockchain.id)
+                    const isFirst = index === 0
+                    const isLast = index === blockchains.length - 1
+                    return (
+                      <button
+                        key={blockchain.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          if (isSelected) {
+                            setSelectedBlockchains(prev => prev.filter(id => id !== blockchain.id))
+                          } else {
+                            setSelectedBlockchains(prev => [...prev, blockchain.id])
+                          }
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left",
+                          isSelected && "bg-blue-50",
+                          isFirst && "rounded-t-xl",
+                          isLast && "rounded-b-xl"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold", blockchain.color)}>
+                            {blockchain.symbol}
                           </div>
-                          {isSelected && (
-                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
-                            </div>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
+                          <span className="text-left">{blockchain.name}</span>
+                        </div>
+                        {isSelected && (
+                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -338,13 +347,24 @@ export default function RegisterPage() {
           {/* Profile Preview */}
           <div className={cn("bg-gray-50 rounded-xl p-4 mb-6")}>
             <label className="block text-sm font-medium text-gray-700 mb-3">Preview</label>
+            
+            {/* Banner Preview */}
+            <div className="h-16 rounded-lg overflow-hidden mb-3">
+              <img 
+                src={`/banner/${selectedBanner}.png`} 
+                alt="Selected banner"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            
+            {/* Avatar and Info */}
             <div className="flex items-center gap-3">
-              <div className={cn("w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center overflow-hidden")}>
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl">👤</span>
-                )}
+              <div className={cn("w-12 h-12 rounded-full overflow-hidden")}>
+                <img 
+                  src={`/avatar/${selectedAvatar}.png`} 
+                  alt="Selected avatar"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">

@@ -21,6 +21,7 @@ export default function LogoutPage() {
 
   const handleLogout = () => {
     disconnect();
+    localStorage.clear(); // Clear local storage
     router.push("/");
   };
 

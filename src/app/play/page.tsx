@@ -109,7 +109,8 @@ export default function PlayPage() {
         roomId: roomId,
         userId: currentUser.userId,
         username: currentUser.username,
-        rank: currentUser.rank
+        rank: currentUser.rank,
+        avatarId: currentUser.avatarId
       });
     }
   };
@@ -145,7 +146,8 @@ export default function PlayPage() {
         guestData: {
           userId: currentUser.userId,
           username: currentUser.username,
-          rank: currentUser.rank
+          rank: currentUser.rank,
+          avatarId: currentUser.avatarId
         }
       });
       // Don't navigate here - wait for room-joined-success event
@@ -189,6 +191,12 @@ export default function PlayPage() {
                 ✅ {successMessage}
               </div>
             )}
+            
+            {/* Game Rules Info */}
+            <div className="w-full p-3 rounded-lg text-center text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
+              <div className="font-semibold mb-1">⚠️ Game Rules</div>
+              <div className="text-xs">You can only play with each opponent once! Find different players for each match.</div>
+            </div>
 
             {/* Connection Status */}
             <div className={cn("w-full p-3 rounded-lg text-center text-sm", 

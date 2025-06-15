@@ -2,6 +2,7 @@
 import { TokenIcon } from "@web3icons/react";
 import { useWeb3 } from "@/app/contexts/Web3Context";
 import Image from "next/image";
+import Link from "next/link";
 import RequireWallet from "@/components/requireWallet";
 import RequireWalletNoti from "@/components/requireWalletNoti";
 import { useState, useEffect } from "react";
@@ -46,15 +47,23 @@ export default function ProfilePage() {
 
         {profile && (
           <>
-            <div className="bg-blue-600 relative" style={{ height: "200px" }}></div>
+            {/* Banner */}
+            <div className="relative" style={{ height: "200px" }}>
+              <img
+                src={`/banner/${profile.bannerId || '1'}.png`}
+                alt="Profile Banner"
+                className="w-full h-full object-cover"
+              />
+            </div>
 
+            {/* Avatar */}
             <div className="relative -mt-16 flex justify-center">
-              <Image
-                src="https://dummyimage.com/96x96/000/fff"
+              <img
+                src={`/avatar/${profile.avatarId || '1'}.png`}
                 alt="Avatar"
                 width={96}
                 height={96}
-                className="rounded-full border-4 border-white"
+                className="rounded-full border-4 border-white w-24 h-24"
               />
             </div>
 
@@ -111,9 +120,80 @@ export default function ProfilePage() {
             {/* Recent Activity */}
             <section className="mt-8 px-6 pb-6">
               <p className="text-gray-500 mb-2">Recent Activity</p>
-              <div className="text-gray-400 text-sm text-center py-8">
-                No recent activity available
-              </div>
+              {profile.gameHistory && profile.gameHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {profile.gameHistory.slice(0, 5).map((game, index) => {
+                    // Format the date for display
+                    const gameDate = new Date(game.timestamp);
+                    const formattedDate = gameDate.toLocaleDateString();
+                    const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    // Get result style based on outcome
+                    const resultStyle = {
+                      win: "text-green-600 font-semibold",
+                      lose: "text-red-600",
+                      draw: "text-yellow-600"
+                    };
+                    
+                    // Get emoji for each choice
+                    const choiceEmoji = {
+                      rock: "✊",
+                      paper: "✋",
+                      scissors: "✌️"
+                    };
+                    
+                    return (
+                      <div key={index} className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img 
+                              src={`/avatar/${game.opponentAvatarId || '1'}.png`} 
+                              alt={`${game.opponentName}'s avatar`}
+                              className="w-8 h-8 rounded-full border border-gray-200"
+                            />
+                            <div>
+                              <div className="font-medium text-sm">{game.opponentName}</div>
+                              <div className="text-xs text-gray-500">{formattedDate} • {formattedTime}</div>
+                            </div>
+                          </div>
+                          <div className={`text-sm ${resultStyle[game.result]}`}>
+                            {game.result === 'win' && '🏆 Won'}
+                            {game.result === 'lose' && '❌ Lost'}
+                            {game.result === 'draw' && '🤝 Draw'}
+                          </div>
+                        </div>
+                        
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-blue-50 border border-blue-100 rounded-full p-1.5 text-sm">
+                              {choiceEmoji[game.playerChoice]}
+                            </div>
+                            <span className="text-xs">vs</span>
+                            <div className="bg-red-50 border border-red-100 rounded-full p-1.5 text-sm">
+                              {choiceEmoji[game.opponentChoice]}
+                            </div>
+                          </div>
+                          <div className="text-xs font-medium text-purple-600">
+                            +{game.pointsEarned} pts
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {profile.gameHistory.length > 5 && (
+                    <div className="text-center mt-2">
+                      <Link href="/game-history" className="text-blue-600 text-sm hover:underline">
+                        View all {profile.gameHistory.length} games
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-400 text-sm text-center py-8">
+                  No recent activity available
+                </div>
+              )}
             </section>
           </>
         )}

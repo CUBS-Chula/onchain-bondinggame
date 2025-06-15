@@ -22,6 +22,7 @@ interface OpponentData {
   username: string;
   rank: number;
   userId: string;
+  avatarId?: string;
 }
 
 export default function GamePage() {
@@ -70,7 +71,8 @@ export default function GamePage() {
         guestData: {
           userId: currentUser.userId,
           username: currentUser.username,
-          rank: currentUser.rank
+          rank: currentUser.rank,
+          avatarId: currentUser.avatarId
         }
       });
     });
@@ -144,9 +146,9 @@ export default function GamePage() {
       // Determine points earned based on result
       let points = 1; // Default for lose
       if (data.result.includes('Win')) {
-        points = 3;
+        points = 1.5;
       } else if (data.result.includes('Draw')) {
-        points = 2;
+        points = 1.25;
       }
       
       setPlayerChoice(data.playerChoice);
@@ -168,14 +170,23 @@ export default function GamePage() {
 
     newSocket.on('room-error', (error: string) => {
       console.error('Room error:', error);
-      setErrorMessage(`Room error: ${error}`);
+      
+      // Check if this is an "already played" error
+      const isAlreadyPlayedError = error.includes('already played with this player');
+      
+      if (isAlreadyPlayedError) {
+        setErrorMessage(`⚠️ ${error}`);
+      } else {
+        setErrorMessage(`Room error: ${error}`);
+      }
       
       // Only redirect if we're not in result state (game hasn't finished yet)
       if (gameState !== 'result') {
         // Navigate back to lobby on room error after showing message
+        const redirectTime = isAlreadyPlayedError ? 5000 : 3000; // Give more time for "already played" error
         setTimeout(() => {
           router.push('/play');
-        }, 3000);
+        }, redirectTime);
       } else {
         // If game is finished, don't redirect, just show the error
         setTimeout(() => setErrorMessage(''), 5000);
@@ -374,8 +385,17 @@ export default function GamePage() {
       <div className={cn("w-full max-w-md p-6 flex flex-col items-center")}>
         {/* Error Message */}
         {errorMessage && (
-          <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-center text-sm text-red-800">
-            ❌ {errorMessage}
+          <div className={`w-full mb-4 p-3 rounded-lg text-center text-sm ${
+            errorMessage.includes('already played with this player') 
+              ? "bg-yellow-50 border border-yellow-300 text-yellow-800"
+              : "bg-red-50 border border-red-200 text-red-800"
+          }`}>
+            {errorMessage}
+            {errorMessage.includes('already played with this player') && (
+              <div className="mt-2 text-xs">
+                Find a new opponent in the lobby. Players can only match once!
+              </div>
+            )}
           </div>
         )}
 
@@ -399,7 +419,19 @@ export default function GamePage() {
         {/* Player Info Header */}
         <div className="flex items-center justify-between w-full mb-6">
           <div className="flex items-center gap-2">
-            <div className={cn("w-8 h-8 rounded-full bg-blue-200")} />
+            <div className={cn("w-8 h-8 rounded-full overflow-hidden")}>
+              {isLoadingUser || !currentUser ? (
+                <div className="w-full h-full bg-blue-200 flex items-center justify-center">
+                  <span className="text-xs">👤</span>
+                </div>
+              ) : (
+                <img 
+                  src={`/avatar/${currentUser.avatarId || '1'}.png`} 
+                  alt="Your avatar"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
             <div>
               {isLoadingUser ? (
                 <>
@@ -419,12 +451,27 @@ export default function GamePage() {
               )}
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-gray-500">
-              {opponentData ? opponentData.username : 'Waiting...'}
+          <div className="flex items-center gap-2">
+            <div className="text-right">
+              <div className="text-xs text-gray-500">
+                {opponentData ? opponentData.username : 'Waiting...'}
+              </div>
+              <div className="text-xs text-gray-400">
+                {opponentData ? `Rank #${opponentData.rank}` : 'Rank --'}
+              </div>
             </div>
-            <div className="text-xs text-gray-400">
-              {opponentData ? `Rank #${opponentData.rank}` : 'Rank --'}
+            <div className={cn("w-8 h-8 rounded-full overflow-hidden")}>
+              {!opponentData ? (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-xs">?</span>
+                </div>
+              ) : (
+                <img 
+                  src={`/avatar/${opponentData.avatarId || '1'}.png`} 
+                  alt="Opponent avatar"
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
           </div>
         </div>
@@ -450,7 +497,7 @@ export default function GamePage() {
               Share room code {roomId} with your friend
             </div>
             <div className="text-xs text-gray-400 mt-2">
-              Debug: opponentData = {JSON.stringify(opponentData)}
+              {/* Debug: opponentData = {JSON.stringify(opponentData)} */}
             </div>
           </div>
         )}
@@ -464,7 +511,7 @@ export default function GamePage() {
               Click "Start Game" when you're ready to play
             </div>
             <div className="text-xs text-gray-400 mb-2">
-              Debug: opponentData = {JSON.stringify(opponentData)}
+              {/* Debug: opponentData = {JSON.stringify(opponentData)} */}
             </div>
             <button 
               onClick={startGame}
@@ -530,19 +577,37 @@ export default function GamePage() {
           <div className="text-center space-y-4 w-full">
             <div className="flex items-center justify-center gap-8 mb-6">
               <div className={cn("flex flex-col items-center")}> 
-                <div className={cn("w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl border-2 border-blue-400")}>
-                  {playerChoice === 'rock' ? '✊' : playerChoice === 'paper' ? '✋' : '✌️'}
+                <div className="relative">
+                  <div className={cn("w-16 h-16 rounded-full overflow-hidden border-2 border-blue-400")}>
+                    <img 
+                      src={`/avatar/${currentUser?.avatarId || '1'}.png`} 
+                      alt="Your avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center text-lg border-2 border-blue-400">
+                    {playerChoice === 'rock' ? '✊' : playerChoice === 'paper' ? '✋' : '✌️'}
+                  </div>
                 </div>
                 <div className="text-sm mt-2 font-semibold">You</div>
-                <div className="text-xs text-gray-500">{playerChoice}</div>
+                <div className="text-xs text-gray-500 capitalize">{playerChoice}</div>
               </div>
               <div className="text-3xl font-bold text-gray-600">VS</div>
               <div className={cn("flex flex-col items-center")}> 
-                <div className={cn("w-16 h-16 rounded-full bg-red-200 flex items-center justify-center text-3xl border-2 border-red-400")}>
-                  {opponentChoice === 'rock' ? '✊' : opponentChoice === 'paper' ? '✋' : '✌️'}
+                <div className="relative">
+                  <div className={cn("w-16 h-16 rounded-full overflow-hidden border-2 border-red-400")}>
+                    <img 
+                      src={`/avatar/${opponentData?.avatarId || '1'}.png`} 
+                      alt="Opponent avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center text-lg border-2 border-red-400">
+                    {opponentChoice === 'rock' ? '✊' : opponentChoice === 'paper' ? '✋' : '✌️'}
+                  </div>
                 </div>
                 <div className="text-sm mt-2 font-semibold">Opponent</div>
-                <div className="text-xs text-gray-500">{opponentChoice}</div>
+                <div className="text-xs text-gray-500 capitalize">{opponentChoice}</div>
               </div>
             </div>
             <div className={cn("text-3xl font-bold mb-4",
@@ -559,8 +624,8 @@ export default function GamePage() {
                     🎯 Points Earned: +{pointsEarned}
                   </div>
                   <div className="text-xs text-blue-600">
-                    {pointsEarned === 3 && '🏆 Victory Bonus!'}
-                    {pointsEarned === 2 && '🤝 Draw Points!'}
+                    {pointsEarned === 1.5 && '🏆 Victory Bonus!'}
+                    {pointsEarned === 1.25 && '🤝 Draw Points!'}
                     {pointsEarned === 1 && '💪 Participation Points!'}
                   </div>
                   {opponentData && (
