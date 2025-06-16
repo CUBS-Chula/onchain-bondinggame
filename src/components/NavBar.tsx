@@ -16,7 +16,7 @@ export default function NavBar() {
   const pathname = usePathname();
   return (
     <nav className={cn(
-      "fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 pt-4 pb-6 px-4 z-50"
+      "fixed bottom-0 w-full bg-white border-t border-gray-200 pt-4 pb-6 px-4 z-50 md:max-w-[390px]"
     )}>
       <div className="flex justify-around items-center">
         {navItems.map(({ href, icon: Icon, label }) => (
