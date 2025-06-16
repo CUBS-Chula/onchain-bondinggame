@@ -119,19 +119,29 @@ export default function RegisterPage() {
   // If wallet is not connected, show wallet connection UI
   if (!account) {
     return (
-      <div className={cn("min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4")}>
-        <div className={cn("w-full max-w-md bg-white rounded-2xl shadow-xl p-8")}>
+      <div
+        className={cn(
+          "min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
+        )}
+      >
+        <div
+          className={cn("w-full max-w-md bg-white rounded-2xl shadow-xl p-8")}
+        >
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">🔗</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Wallet</h1>
-            <p className="text-gray-600">Connect your wallet to create your profile and start trading</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Connect Your Wallet
+            </h1>
+            <p className="text-gray-600">
+              Connect your wallet to create your profile and start playing !!
+            </p>
           </div>
-          
+
           <div className="space-y-3">
             <button
-              onClick={() => connect('metamask')}
+              onClick={() => connect("metamask")}
               disabled={isConnecting}
               className={cn(
                 "w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all duration-200",
@@ -143,9 +153,9 @@ export default function RegisterPage() {
               </div>
               <span className="font-semibold text-gray-700">MetaMask</span>
             </button>
-            
+
             <button
-              onClick={() => connect('coinbase')}
+              onClick={() => connect("coinbase")}
               disabled={isConnecting}
               className={cn(
                 "w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200",
@@ -155,11 +165,13 @@ export default function RegisterPage() {
               <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">C</span>
               </div>
-              <span className="font-semibold text-gray-700">Coinbase Wallet</span>
+              <span className="font-semibold text-gray-700">
+                Coinbase Wallet
+              </span>
             </button>
-            
+
             <button
-              onClick={() => connect('walletconnect')}
+              onClick={() => connect("walletconnect")}
               disabled={isConnecting}
               className={cn(
                 "w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all duration-200",
@@ -172,7 +184,10 @@ export default function RegisterPage() {
               <span className="font-semibold text-gray-700">WalletConnect</span>
             </button>
           </div>
-          
+          <div className="text-center text-gray-400 text-xs pt-4 border-t border-gray-100">
+            © 2025 Onchain Bootcamp | All rights reserved
+          </div>
+
           {isConnecting && (
             <div className="text-center mt-4">
               <div className="inline-flex items-center gap-2 text-gray-600">
@@ -183,17 +198,25 @@ export default function RegisterPage() {
           )}
         </div>
       </div>
-    )
+    );
   }
 
   // Connected wallet - show profile setup
   return (
-    <div className={cn("min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100")}>
+    <div
+      className={cn(
+        "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100"
+      )}
+    >
       <div className={cn("container mx-auto px-4 py-8 pb-32 max-w-md")}>
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Your Profile</h1>
-          <p className="text-gray-600">Set up your trading profile to get started</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Create Your Profile
+          </h1>
+          <p className="text-gray-600">
+            Set up your trading profile to get started
+          </p>
           <div className="mt-3 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm inline-block">
             ✓ Wallet Connected: {account.slice(0, 6)}...{account.slice(-4)}
           </div>
@@ -202,7 +225,9 @@ export default function RegisterPage() {
         <div className={cn("bg-white rounded-2xl shadow-xl p-6 mb-16")}>
           {/* Avatar Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Choose Avatar</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Choose Avatar
+            </label>
             <div className="grid grid-cols-4 gap-3">
               {[1, 2, 3, 4, 5, 6, 7].map((avatarId) => (
                 <button
@@ -215,8 +240,8 @@ export default function RegisterPage() {
                       : "border-gray-300 hover:border-gray-400"
                   )}
                 >
-                  <img 
-                    src={`/avatar/${avatarId}.png`} 
+                  <img
+                    src={`/avatar/${avatarId}.png`}
                     alt={`Avatar ${avatarId}`}
                     className="w-full h-full object-cover"
                   />
@@ -227,7 +252,9 @@ export default function RegisterPage() {
 
           {/* Banner Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Choose Banner</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Choose Banner
+            </label>
             <div className="grid grid-cols-2 gap-3">
               {[1, 2, 3, 4, 5, 6].map((bannerId) => (
                 <button
@@ -240,8 +267,8 @@ export default function RegisterPage() {
                       : "border-gray-300 hover:border-gray-400"
                   )}
                 >
-                  <img 
-                    src={`/banner/${bannerId}.png`} 
+                  <img
+                    src={`/banner/${bannerId}.png`}
                     alt={`Banner ${bannerId}`}
                     className="w-full h-full object-cover"
                   />
@@ -252,7 +279,9 @@ export default function RegisterPage() {
 
           {/* Nickname Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nickname</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nickname
+            </label>
             <input
               type="text"
               value={nickname}
@@ -270,7 +299,9 @@ export default function RegisterPage() {
 
           {/* Favorite Blockchain Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Favorite Blockchains *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Favorite Blockchains *
+            </label>
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
@@ -282,48 +313,78 @@ export default function RegisterPage() {
               >
                 {selectedBlockchains.length > 0 ? (
                   <div className="flex items-center gap-2 flex-wrap">
-                    {selectedBlockchains.slice(0, 2).map(blockchainId => {
-                      const blockchain = blockchains.find(b => b.id === blockchainId)
+                    {selectedBlockchains.slice(0, 2).map((blockchainId) => {
+                      const blockchain = blockchains.find(
+                        (b) => b.id === blockchainId
+                      );
                       return (
-                        <div key={blockchainId} className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1">
-                          <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold", blockchain?.color)}>
+                        <div
+                          key={blockchainId}
+                          className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1"
+                        >
+                          <div
+                            className={cn(
+                              "w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold",
+                              blockchain?.color
+                            )}
+                          >
                             {blockchain?.symbol}
                           </div>
                           <span className="text-sm">{blockchain?.name}</span>
                         </div>
-                      )
+                      );
                     })}
                     {selectedBlockchains.length > 2 && (
-                      <span className="text-sm text-gray-500">+{selectedBlockchains.length - 2} more</span>
+                      <span className="text-sm text-gray-500">
+                        +{selectedBlockchains.length - 2} more
+                      </span>
                     )}
                   </div>
                 ) : (
-                  <span className="text-gray-500">Select your favorite blockchains</span>
+                  <span className="text-gray-500">
+                    Select your favorite blockchains
+                  </span>
                 )}
-                <span className={cn("transition-transform", isDropdownOpen ? "rotate-180" : "")}>▼</span>
+                <span
+                  className={cn(
+                    "transition-transform",
+                    isDropdownOpen ? "rotate-180" : ""
+                  )}
+                >
+                  ▼
+                </span>
               </button>
-              
+
               {errors.blockchains && (
-                <p className="text-red-500 text-sm mt-1">{errors.blockchains}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.blockchains}
+                </p>
               )}
-              
+
               {isDropdownOpen && (
                 <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                   {blockchains.map((blockchain, index) => {
-                    const isSelected = selectedBlockchains.includes(blockchain.id)
-                    const isFirst = index === 0
-                    const isLast = index === blockchains.length - 1
+                    const isSelected = selectedBlockchains.includes(
+                      blockchain.id
+                    );
+                    const isFirst = index === 0;
+                    const isLast = index === blockchains.length - 1;
                     return (
                       <button
                         key={blockchain.id}
                         type="button"
                         onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
+                          e.preventDefault();
+                          e.stopPropagation();
                           if (isSelected) {
-                            setSelectedBlockchains(prev => prev.filter(id => id !== blockchain.id))
+                            setSelectedBlockchains((prev) =>
+                              prev.filter((id) => id !== blockchain.id)
+                            );
                           } else {
-                            setSelectedBlockchains(prev => [...prev, blockchain.id])
+                            setSelectedBlockchains((prev) => [
+                              ...prev,
+                              blockchain.id,
+                            ]);
                           }
                         }}
                         className={cn(
@@ -334,7 +395,12 @@ export default function RegisterPage() {
                         )}
                       >
                         <div className="flex items-center gap-3 flex-1">
-                          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold", blockchain.color)}>
+                          <div
+                            className={cn(
+                              "w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold",
+                              blockchain.color
+                            )}
+                          >
                             {blockchain.symbol}
                           </div>
                           <span className="text-left">{blockchain.name}</span>
@@ -345,7 +411,7 @@ export default function RegisterPage() {
                           </div>
                         )}
                       </button>
-                    )
+                    );
                   })}
                 </div>
               )}
@@ -354,50 +420,64 @@ export default function RegisterPage() {
 
           {/* Profile Preview */}
           <div className={cn("bg-gray-50 rounded-xl p-4 mb-6")}>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Preview</label>
-            
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Preview
+            </label>
+
             {/* Banner Preview */}
             <div className="h-16 rounded-lg overflow-hidden mb-3">
-              <img 
-                src={`/banner/${selectedBanner}.png`} 
+              <img
+                src={`/banner/${selectedBanner}.png`}
                 alt="Selected banner"
                 className="w-full h-full object-cover"
               />
             </div>
-            
+
             {/* Avatar and Info */}
             <div className="flex items-center gap-3">
               <div className={cn("w-12 h-12 rounded-full overflow-hidden")}>
-                <img 
-                  src={`/avatar/${selectedAvatar}.png`} 
+                <img
+                  src={`/avatar/${selectedAvatar}.png`}
                   alt="Selected avatar"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">
-                  {nickname || 'Your Nickname'}
+                  {nickname || "Your Nickname"}
                 </div>
                 <div className="text-sm text-gray-500">
                   {selectedBlockchains.length > 0 ? (
                     <div className="flex items-center gap-1 flex-wrap mt-1">
-                      {selectedBlockchains.slice(0, 3).map(blockchainId => {
-                        const blockchain = blockchains.find(b => b.id === blockchainId)
+                      {selectedBlockchains.slice(0, 3).map((blockchainId) => {
+                        const blockchain = blockchains.find(
+                          (b) => b.id === blockchainId
+                        );
                         return (
-                          <div key={blockchainId} className="flex items-center gap-1">
-                            <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold", blockchain?.color)}>
+                          <div
+                            key={blockchainId}
+                            className="flex items-center gap-1"
+                          >
+                            <div
+                              className={cn(
+                                "w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold",
+                                blockchain?.color
+                              )}
+                            >
                               {blockchain?.symbol}
                             </div>
                             <span className="text-xs">{blockchain?.name}</span>
                           </div>
-                        )
+                        );
                       })}
                       {selectedBlockchains.length > 3 && (
-                        <span className="text-xs text-gray-400">+{selectedBlockchains.length - 3} more</span>
+                        <span className="text-xs text-gray-400">
+                          +{selectedBlockchains.length - 3} more
+                        </span>
                       )}
                     </div>
                   ) : (
-                    'No blockchains selected'
+                    "No blockchains selected"
                   )}
                 </div>
               </div>
@@ -407,7 +487,9 @@ export default function RegisterPage() {
           {/* Save Button */}
           <button
             onClick={handleSave}
-            disabled={isSaving || !nickname.trim() || selectedBlockchains.length === 0}
+            disabled={
+              isSaving || !nickname.trim() || selectedBlockchains.length === 0
+            }
             className={cn(
               "w-full py-3 rounded-xl font-semibold transition-all duration-200",
               isSaving || !nickname.trim() || selectedBlockchains.length === 0
@@ -421,11 +503,14 @@ export default function RegisterPage() {
                 Creating Profile...
               </div>
             ) : (
-              'Create Profile'
+              "Create Profile"
             )}
           </button>
+          <div className="text-center text-gray-400 text-xs pt-4 border-t border-gray-100">
+            © 2025 Onchain Bootcamp | All rights reserved
+          </div>
         </div>
-      </div>
+      </div> 
     </div>
-  )
+  );
 }

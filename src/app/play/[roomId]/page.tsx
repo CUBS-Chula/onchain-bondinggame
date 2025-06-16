@@ -756,6 +756,10 @@ export default function GamePage() {
           </div>
         )}
       </div>
+      
+      <div className="text-center text-gray-400 text-xs pt-4 border-t border-gray-100">
+        © 2025 Onchain Bootcamp | All rights reserved
+      </div>
     </div>
   );
 }
