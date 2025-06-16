@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/contexts/Web3Context";
-import RequireWalletNoti from "@/components/requireWalletNoti";
-import { authApi, UserProfile } from '@/components/apiUtils';
-import { io, Socket } from 'socket.io-client';
+import { authApi, UserProfile } from "@/components/apiUtils";
 import { cn } from "@/components/cn";
+import RequireWalletNoti from "@/components/requireWalletNoti";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 export default function PlayPage() {
   const { account } = useWeb3();
@@ -19,61 +19,68 @@ export default function PlayPage() {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const socketRef = useRef<Socket | null>(null);
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001';
+    // const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001';
+    const backendUrl = "https://api.game.onchainbootcamp.org";
     const newSocket = io(backendUrl);
     setSocket(newSocket);
     socketRef.current = newSocket;
 
-    newSocket.on('connect', () => {
-      console.log('Connected to server');
+    newSocket.on("connect", () => {
+      console.log("Connected to server");
       setIsConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from server');
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from server");
       setIsConnected(false);
     });
 
     // Socket event listeners for room creation
-    newSocket.on('room-created', (data: { roomId: string, hostId: string }) => {
-      console.log('Room created:', data);
+    newSocket.on("room-created", (data: { roomId: string; hostId: string }) => {
+      console.log("Room created:", data);
       setCreatedRoomId(data.roomId);
       setIsCreating(false);
-      
+
       // Don't auto-navigate - wait for player to join
     });
 
-    newSocket.on('player-joined', (data: { guestData: any, roomData: any }) => {
-      console.log('Player joined the room, redirecting both players to game:', data);
+    newSocket.on("player-joined", (data: { guestData: any; roomData: any }) => {
+      console.log(
+        "Player joined the room, redirecting both players to game:",
+        data
+      );
       // Reset states
       setIsJoining(false);
-      setJoinRoomId('');
+      setJoinRoomId("");
       // Both host and guest get redirected to the game page
       router.push(`/play/${data.roomData.id}`);
     });
 
-    newSocket.on('room-joined-success', (data: { hostData: any, roomData: any }) => {
-      console.log('Successfully joined room, redirecting to game:', data);
-      // Reset states
-      setIsJoining(false);
-      setJoinRoomId('');
-      // Guest gets redirected to the game page  
-      router.push(`/play/${data.roomData.id}`);
-    });
+    newSocket.on(
+      "room-joined-success",
+      (data: { hostData: any; roomData: any }) => {
+        console.log("Successfully joined room, redirecting to game:", data);
+        // Reset states
+        setIsJoining(false);
+        setJoinRoomId("");
+        // Guest gets redirected to the game page
+        router.push(`/play/${data.roomData.id}`);
+      }
+    );
 
-    newSocket.on('room-error', (error: string) => {
-      console.error('Room error:', error);
+    newSocket.on("room-error", (error: string) => {
+      console.error("Room error:", error);
       setErrorMessage(error);
       setIsCreating(false);
       setIsJoining(false);
       // Clear error after 5 seconds
-      setTimeout(() => setErrorMessage(''), 5000);
+      setTimeout(() => setErrorMessage(""), 5000);
     });
 
     return () => {
@@ -89,7 +96,7 @@ export default function PlayPage() {
         const userData = await authApi.getMe();
         setCurrentUser(userData);
       } catch (error) {
-        console.error('Failed to fetch user data:', error);
+        console.error("Failed to fetch user data:", error);
       } finally {
         setIsLoadingUser(false);
       }
@@ -103,14 +110,14 @@ export default function PlayPage() {
       setIsCreating(true);
       // Generate room code on frontend
       const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-      console.log('Creating room with ID:', roomId);
-      
-      socket.emit('create-room', {
+      console.log("Creating room with ID:", roomId);
+
+      socket.emit("create-room", {
         roomId: roomId,
         userId: currentUser.userId,
         username: currentUser.username,
         rank: currentUser.rank,
-        avatarId: currentUser.avatarId
+        avatarId: currentUser.avatarId,
       });
     }
   };
@@ -119,42 +126,42 @@ export default function PlayPage() {
     navigator.clipboard.writeText(createdRoomId);
     setSuccessMessage("Room code copied to clipboard!");
     // Clear success message after 3 seconds
-    setTimeout(() => setSuccessMessage(''), 3000);
+    setTimeout(() => setSuccessMessage(""), 3000);
   };
 
   const joinRoom = async () => {
     if (!joinRoomId.trim()) {
       setErrorMessage("Please enter a room code");
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
 
     if (!socket || !currentUser) {
       setErrorMessage("Not connected to server or user not loaded");
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
 
     setIsJoining(true);
-    setErrorMessage(''); // Clear any existing errors
+    setErrorMessage(""); // Clear any existing errors
 
     try {
       // Emit join-room event instead of navigating directly
       console.log("Attempting to join room:", joinRoomId);
-      socket.emit('join-room', {
+      socket.emit("join-room", {
         roomId: joinRoomId.trim().toUpperCase(),
         guestData: {
           userId: currentUser.userId,
           username: currentUser.username,
           rank: currentUser.rank,
-          avatarId: currentUser.avatarId
-        }
+          avatarId: currentUser.avatarId,
+        },
       });
       // Don't navigate here - wait for room-joined-success event
     } catch (error) {
       console.error("Error joining room:", error);
       setErrorMessage("Failed to join room. Please try again.");
-      setTimeout(() => setErrorMessage(''), 5000);
+      setTimeout(() => setErrorMessage(""), 5000);
       setIsJoining(false);
     }
   };
@@ -191,17 +198,28 @@ export default function PlayPage() {
                 ✅ {successMessage}
               </div>
             )}
-            
+
             {/* Game Rules Info */}
             <div className="w-full p-3 rounded-lg text-center text-sm bg-yellow-50 text-yellow-800 border border-yellow-200">
               <div className="font-semibold mb-1">⚠️ Game Rules</div>
-              <div className="text-xs">You can only play with each opponent once! Find different players for each match.</div>
+              <div className="text-xs">
+                You can only play with each opponent once! Find different
+                players for each match.
+              </div>
             </div>
 
             {/* Connection Status */}
-            <div className={cn("w-full p-3 rounded-lg text-center text-sm", 
-              isConnected ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>
-              {isConnected ? "🟢 Connected to Game Server" : "🔴 Disconnected from Game Server"}
+            <div
+              className={cn(
+                "w-full p-3 rounded-lg text-center text-sm",
+                isConnected
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              )}
+            >
+              {isConnected
+                ? "🟢 Connected to Game Server"
+                : "🔴 Disconnected from Game Server"}
             </div>
 
             {/* Connected Wallet Status */}
@@ -211,7 +229,8 @@ export default function PlayPage() {
                   ✅ {currentUser.username}
                 </div>
                 <div className="text-green-600 text-xs mt-1">
-                  Rank #{currentUser.rank} • {account.slice(0, 6)}...{account.slice(-4)}
+                  Rank #{currentUser.rank} • {account.slice(0, 6)}...
+                  {account.slice(-4)}
                 </div>
               </div>
             )}
@@ -230,8 +249,11 @@ export default function PlayPage() {
                 <button
                   onClick={createRoom}
                   disabled={!isConnected || !currentUser || isCreating}
-                  className={cn("flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 transition-all duration-200 shadow-lg text-center",
-                    (!isConnected || !currentUser || isCreating) && "opacity-50 cursor-not-allowed")}
+                  className={cn(
+                    "flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 transition-all duration-200 shadow-lg text-center",
+                    (!isConnected || !currentUser || isCreating) &&
+                      "opacity-50 cursor-not-allowed"
+                  )}
                 >
                   {isCreating ? (
                     <div>
@@ -248,8 +270,15 @@ export default function PlayPage() {
 
                 <button
                   onClick={joinRoom}
-                  disabled={!joinRoomId.trim() || isJoining || !isConnected || !currentUser}
-                  className={cn("flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 shadow-lg text-center")}
+                  disabled={
+                    !joinRoomId.trim() ||
+                    isJoining ||
+                    !isConnected ||
+                    !currentUser
+                  }
+                  className={cn(
+                    "flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 shadow-lg text-center"
+                  )}
                 >
                   {isJoining ? (
                     <div>
@@ -285,7 +314,9 @@ export default function PlayPage() {
               <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 space-y-4 mt-6">
                 <div className="text-center">
                   <div className="text-3xl mb-2">🎉</div>
-                  <p className="text-blue-800 font-semibold text-xl mb-1">Room Created!</p>
+                  <p className="text-blue-800 font-semibold text-xl mb-1">
+                    Room Created!
+                  </p>
                   <p className="text-blue-600 text-sm">
                     Share this code with your friend
                   </p>
