@@ -442,7 +442,7 @@ export default function GamePage() {
             {errorMessage}
             {errorMessage.includes("already played with this player") && (
               <div className="mt-2 text-xs">
-                Find a new opponent in the lobby. Players can only match once!
+                Find a new opponent in the lobby. Players can only match 3 times!
               </div>
             )}
           </div>
